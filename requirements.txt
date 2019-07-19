@@ -3,3 +3,6 @@ pyenchant
 compound-word-splitter
 numpy
 pandas
+dnspython
+pyasn
+netaddr
