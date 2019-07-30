@@ -5,7 +5,8 @@ from netaddr import IPNetwork
 from pyasn_util_asnames import download_asnames, _html_to_dict
 import pandas as pd
 
-class FeatureExtraction(object):
+
+class _FeatureExtraction(object):
     
     
     def  __init__(self):
@@ -14,8 +15,11 @@ class FeatureExtraction(object):
         self.asn_dict = _html_to_dict(data)
 
 
-    def extract(self, domain_list, label):
-        df = pd.DataFrame(domain_list, columns=['domain'])
+    def extract(self, url_list, label):
+        df = pd.DataFrame(url_list, columns=['url'])
+        df.loc[:, 'domain'] = df['url'].apply(self.__get_domain_from_url)
+        df.drop_duplicates(subset=df.columns.difference(['url']), inplace=True)
+        
         df.loc[:, 'domain_name'] = df['domain'].apply(self.__get_domain_name)
         df.loc[:, 'base_domain'] = df['domain'].apply(self.__get_base_domain)
         df.loc[:, 'trigrams'] = df['domain_name'].apply(self.__extract_trigrams)
@@ -35,6 +39,9 @@ class FeatureExtraction(object):
         df.loc[:, 'ns_as_subnet'] = df['ns_as_subnet'].apply(lambda x: x[1])
         df.loc[:, 'ns_as_name'] = df['ns_as_number'].apply(self.__get_as_name)
         df.loc[:, 'label'] = label
+
+        df.set_index('domain', inplace=True)
+        
         return df
 
     def __extract_trigrams(self, domain_name):
@@ -62,6 +69,19 @@ class FeatureExtraction(object):
         except:
             print (f'{domain} - NX domain')
         return ns
+
+
+    def __get_domain_from_url(self, url):
+        domain = None
+        try:
+            exr = tldextract.extract(url)
+            if exr.subdomain:
+                domain = f'{exr.subdomain}.{exr.domain}.{exr.suffix}'
+            else:
+                domain = f'{exr.domain}.{exr.suffix}'
+        except:
+            print (f'error get domain of {url}')
+        return domain
 
 
     def __get_base_domain(self, domain):
@@ -110,3 +130,6 @@ class FeatureExtraction(object):
         if as_number and as_number in self.asn_dict:
             as_name = self.asn_dict[as_number]
         return as_name
+
+
+feature_extractor =  _FeatureExtraction()

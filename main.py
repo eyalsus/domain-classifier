@@ -1,6 +1,6 @@
 import pandas as pd
 import networkx as nx
-from FeatureExtraction import FeatureExtraction
+from FeatureExtraction import feature_extractor
 from SocialNetworkAnalysis import SocialNetworkAnalysis
 
 
@@ -29,6 +29,19 @@ def main():
         print(domain, sna.G.nodes[domain]['current'])
 
     print (len(sna.G))
+
+
+def domains_feature_extraction(request):
+    d = request.get_json()
+    if d and 'domain_list' in d and 'label' in d:
+            features_df = handle_domain_list(d['domain_list'], d['label'])
+    return features_df.T.to_json()
+
+
+def handle_domain_list(domain_list, label):
+    features = feature_extractor.extract(domain_list, label)
+    return features
+
 
 if __name__ == "__main__":
     main()

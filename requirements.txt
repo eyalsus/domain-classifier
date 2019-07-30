@@ -7,3 +7,4 @@ dnspython
 pyasn
 netaddr
 flask
+networkx
