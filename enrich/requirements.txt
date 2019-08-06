@@ -1,0 +1,10 @@
+tldextract
+pyenchant
+numpy
+pandas
+dnspython
+pyasn
+netaddr
+google-cloud-storage
+gcsfs
+google-cloud-pubsub
