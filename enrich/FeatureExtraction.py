@@ -4,13 +4,13 @@ import pyasn
 from netaddr import IPNetwork
 from pyasn_util_asnames import download_asnames, _html_to_dict
 import pandas as pd
-from common import get_domain_from_url, get_base_domain
+from common import get_domain_from_url, get_base_domain, read_file
 
 class _FeatureExtraction(object):
-    
+
     
     def  __init__(self):
-        self.asndb = pyasn.pyasn('resources/asn20190719.db')
+        self.asndb = None # pyasn.pyasn('resources/asn20190719.db')
         data = download_asnames()
         self.asn_dict = _html_to_dict(data)
 

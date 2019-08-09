@@ -1,2 +1,2 @@
 REM gcloud pubsub subscriptions create SUBSCRIPTION --topic=collect-domains --topic-project=domain-classifier
-gcloud functions deploy collect_data_pubsub --runtime python37 --trigger-topic=collect-domains
+gcloud functions deploy collect_data_pubsub --runtime python37 --trigger-topic=collect-domains --env-vars-file env.yaml

@@ -4,16 +4,18 @@ from io import StringIO, BytesIO
 from zipfile import ZipFile
 
 OPENPHISH_URL = 'https://openphish.com/feed.txt'
-PHISHTANK_URL = 'http://data.phishtank.com/data/online-valid.csv'
+PHISHTANK_URL = 'http://data.phishtank.com/data/{apikey}/online-valid.csv'
 ALEXA_URL = 'http://s3.amazonaws.com/alexa-static/top-1m.csv.zip'
 OPENDNS_URL = 'http://s3-us-west-1.amazonaws.com/umbrella-static/top-1m.csv.zip'
 
 class DataSource(object):
     
-    def __init__(self, url, origin, label):
+    def __init__(self, url, origin, label, topic, subscription):
         self._url = url
         self._origin = origin
         self._label = label
+        self._topic = topic
+        self._subscription = subscription
     
 
     def get_origin(self):
@@ -22,6 +24,14 @@ class DataSource(object):
 
     def get_label(self):
         return self._label
+
+    
+    def get_topic(self):
+        return self._topic
+
+
+    def get_subscription(self):
+        return self._subscription
 
 
     def fetch(self):
@@ -45,8 +55,8 @@ class AlexaDataSource(DataSource):
 
 class PhishTankDataSource(DataSource):
     
-    def __init__(self, url, origin, label):
-        super().__init__(url, origin, label)
+    def __init__(self, url, origin, label, topic, subscription):
+        super().__init__(url, origin, label, topic, subscription)
 
 
     def fetch(self):
@@ -61,8 +71,8 @@ class PhishTankDataSource(DataSource):
 
 class OpenPhishDataSource(DataSource):
 
-    def __init__(self, url, origin, label):
-        super().__init__(url, origin, label)
+    def __init__(self, url, origin, label, topic, subscription):
+        super().__init__(url, origin, label, topic, subscription)
 
 
     def fetch(self):

@@ -1,5 +1,6 @@
 import tldextract
 from datetime import timedelta
+import cloudstorage as gcs
 
 def get_domain_from_url(url):
     domain = None
@@ -33,3 +34,10 @@ def round_time(dt, roundTo=60):
    seconds = (dt.replace(tzinfo=None) - dt.min).seconds
    rounding = (seconds+roundTo/2) // roundTo * roundTo
    return dt + timedelta(0, rounding-seconds, -dt.microsecond)
+
+
+def read_file(filename):
+    gcs_file = gcs.open(filename)
+    contents = gcs_file.read()
+    gcs_file.close()
+    return contents

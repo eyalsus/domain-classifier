@@ -46,15 +46,12 @@ topic_name = "data_collection"
 def domains_feature_extraction_pubsub(event, context):
     d = json.loads(base64.b64decode(event['data']))
     current_date_str = datetime.now().strftime("%d-%b-%Y-%H-%M-%S")    
-    print (f'event information: {event}')
-    print (f'context information: {context}')
-    print (f'd: {d}')
     message_df = pd.DataFrame.from_dict(d.values())
-    print (f'columns: {message_df.columns}')
-    print (message_df.head())
     df = feature_extractor.extract(message_df)
+    print (f'putting {len(df)} to bucket')
     df.to_csv(f'gs://{BUCKET_NAME}/GT/{current_date_str}.txt')
-    return True
+    print (f'domains_feature_extraction_pubsub done')
+    return 'Done.'
 
 
 # # def test_storage(request):
