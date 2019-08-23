@@ -10,7 +10,7 @@ class _FeatureExtraction(object):
 
     
     def  __init__(self):
-        self.asndb = None # pyasn.pyasn('resources/asn20190719.db')
+        self.asndb = pyasn.pyasn('resources/asn20190719.db')
         data = download_asnames()
         self.asn_dict = _html_to_dict(data)
 
