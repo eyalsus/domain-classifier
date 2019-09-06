@@ -25,7 +25,7 @@ def main():
                 domain = get_domain_from_url(url)
                 if domain and not redis.get(domain):
                     features = feature_extractor.extract_domain_features(domain, label)
-                    redis.set(domain, json.dumps(features), ex=3600)
+                    redis.set(domain, json.dumps(features), ex=7200)
                     redis.publish(ENRICHED_DOMAIN, domain)
                     print(f'published {domain} to channel {ENRICHED_DOMAIN}')
         except Exception as e:
