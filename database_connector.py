@@ -18,17 +18,21 @@ def main():
         try:
             domain = message['data']
             print(f'get data from redis from domain {domain}')
-            features = redis.get(domain)
-            if features:
-                commit_batch.append(json.loads(features))
+            entry = pd.read_sql(f"select count(1) from domains where domain = '{domain}'", engine)
+            if entry['count'][0] == 1:
+                print (f'{domain} already exists in the DB')
+            else:
+                features = redis.get(domain)
+                if features:
+                    commit_batch.append(json.loads(features))
             
-            print (f'len(commit_batch): {len(commit_batch)}')
-            if len(commit_batch) >= COMMIT_BATCH_SIZE:
-                df = pd.DataFrame.from_dict(commit_batch)
-                df['timestamp'] = df['timestamp'].apply(pd.to_datetime)
-                df.to_sql('domains', engine, if_exists='append', index=False)
-                print ('wrote commit_batch to DB')
-                commit_batch.clear()
+                print (f'len(commit_batch): {len(commit_batch)}')
+                if len(commit_batch) >= COMMIT_BATCH_SIZE:
+                    df = pd.DataFrame.from_dict(commit_batch)
+                    df['timestamp'] = df['timestamp'].apply(pd.to_datetime)
+                    df.to_sql('domains', engine, if_exists='append', index=False)
+                    print ('wrote commit_batch to DB')
+                    commit_batch.clear()
         except Exception as e:
             print(message, e)
 
