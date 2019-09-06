@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 import json
 from common import get_domain_from_url, get_base_domain
-from DataSource import PHISHING_URL_TOPIC, ENRICHED_DOMAIN
+from DataSource import NEW_URL_TOPIC, ENRICHED_DOMAIN
 import os
 from FeatureExtraction import feature_extractor
 from redis import StrictRedis
@@ -14,7 +14,7 @@ def main():
     print ('main start')
     redis = StrictRedis(host='localhost', port=6379, db=0)
     pubsub = redis.pubsub()
-    pubsub.subscribe(PHISHING_URL_TOPIC)
+    pubsub.subscribe(NEW_URL_TOPIC)
     print ('start listening...')
     for message in pubsub.listen():
         try:

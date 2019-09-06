@@ -7,8 +7,13 @@ OPENPHISH_URL = 'https://openphish.com/feed.txt'
 PHISHTANK_URL = 'http://data.phishtank.com/data/{apikey}/online-valid.csv'
 ALEXA_URL = 'http://s3.amazonaws.com/alexa-static/top-1m.csv.zip'
 OPENDNS_URL = 'http://s3-us-west-1.amazonaws.com/umbrella-static/top-1m.csv.zip'
-PHISHING_URL_TOPIC = 'PHISHING_URL_TOPIC'
+NEW_URL_TOPIC = 'NEW_URL_TOPIC'
 ENRICHED_DOMAIN = 'ENRICHED_DOMAIN'
+
+OPENPHISH_STR = 'OpenPhish'
+PHISHTANK_STR = 'PhishTank'
+ALEXA_STR = 'Alexa'
+OPENDNS_STR = 'OpenDNS'
 
 class DataSource(object):
     
@@ -40,8 +45,8 @@ class DataSource(object):
         pass
 
 class AlexaDataSource(DataSource): 
-    def __init__(self, url, origin, label):
-        super().__init__(url, origin, label)
+    def __init__(self, url, origin, label, topic, subscription):
+        super().__init__(url, origin, label, topic, subscription)
 
 
     def fetch(self):
