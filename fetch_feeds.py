@@ -20,7 +20,8 @@ logger = logging.getLogger('fetch_feeds')
 logger.setLevel(logging.DEBUG)
 # create file handler which logs even debug messages
 log_dir_path = os.getenv('LOG_DIR_PATH')
-log_file_name = datetime.now().isoformat().replace(':', '_').split('.')[0]
+dateStr = datetime.now().isoformat().replace(':', '_').split('.')[0]
+log_file_name = f'fetch_feeds_{dateStr}.log'
 log_file_path = os.path.join(log_dir_path, log_file_name)
 fh = logging.FileHandler(log_file_path)
 fh.setLevel(logging.DEBUG)
@@ -34,7 +35,6 @@ ch.setFormatter(formatter)
 # add the handlers to the logger
 logger.addHandler(fh)
 logger.addHandler(ch)
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -73,9 +73,11 @@ def main():
     while(True):
         redis = StrictRedis(host=args.redis_host, port=args.redis_port, db=args.redis_db)
         fetch_feed(data_source, args.publish_limit, redis)
-        sleep(600)
         if not args.infinity:
             break
+        logger.info('going to sleep now...')
+        sleep(os.getenv('FETCH_SLEEP_TIME'))
+        logger.info('woke up!')
 
 
 def fetch_feed(data_source, publish_limit, redis):
