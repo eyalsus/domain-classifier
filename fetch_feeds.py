@@ -45,7 +45,7 @@ def main():
     parser.add_argument("--redis-db", type=int, default=0, help="redis db index")
     parser.add_argument("--publish-limit", type=int, default=10000, help="publish limit for fetched URLS")
     args = parser.parse_args()
-)
+
     logger.info(f'program args: {args}')
     # phishtank_url = PHISHTANK_URL.format(apikey=phishtank_apikey)
     # logger.info(f'phishtank_url: {phishtank_url}')
