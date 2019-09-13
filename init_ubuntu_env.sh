@@ -7,6 +7,8 @@ sudo service redis-server start
 sudo service postgresql start
 nohup python3 /home/eyalp/domain-classifier/enrich_domain.py &
 nohup python3 /home/eyalp/domain-classifier/database_connector.py &
+sleep 5
 nohup python3 /home/eyalp/domain-classifier/fetch_feeds.py --data-source PhishTank --infinity &
+sleep 5
 nohup python3 /home/eyalp/domain-classifier/fetch_feeds.py --data-source OpenPhish --infinity &
 #sudo service cron start
