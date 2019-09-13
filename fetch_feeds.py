@@ -76,7 +76,8 @@ def main():
         if not args.infinity:
             break
         logger.info('going to sleep now...')
-        sleep(os.getenv('FETCH_SLEEP_TIME'))
+        sleep_duration = int(os.getenv('FETCH_SLEEP_TIME'))
+        sleep(sleep_duration)
         logger.info('woke up!')
 
 
