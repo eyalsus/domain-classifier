@@ -11,21 +11,44 @@ from DataSource import OPENDNS_URL, OPENDNS_STR
 from redis import StrictRedis
 import os
 import argparse
+import logging
+from datetime import datetime
+from time import sleep
+
+# create logger with 'spam_application'
+logger = logging.getLogger('fetch_feeds')
+logger.setLevel(logging.DEBUG)
+# create file handler which logs even debug messages
+log_dir_path = os.getenv('LOG_DIR_PATH')
+log_file_name = datetime.now().isoformat().replace(':', '_').split('.')[0]
+log_file_path = os.path.join(log_dir_path, log_file_name)
+fh = logging.FileHandler(log_file_path)
+fh.setLevel(logging.DEBUG)
+# create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.ERROR)
+# create formatter and add it to the handlers
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+fh.setFormatter(formatter)
+ch.setFormatter(formatter)
+# add the handlers to the logger
+logger.addHandler(fh)
+logger.addHandler(ch)
+
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--infinity", action='store_true')
     parser.add_argument("--data-source", type=str, help="datasource to fetch")
     parser.add_argument("--redis-host", type=str, default='localhost', help="redis hostname")
     parser.add_argument("--redis-port", type=int, default=6379, help="redis port")
     parser.add_argument("--redis-db", type=int, default=0, help="redis db index")
     parser.add_argument("--publish-limit", type=int, default=10000, help="publish limit for fetched URLS")
     args = parser.parse_args()
-
-    print ('main start')
-    redis = StrictRedis(host=args.redis_host, port=args.redis_port, db=args.redis_db)
-
+)
+    logger.info(f'program args: {args}')
     # phishtank_url = PHISHTANK_URL.format(apikey=phishtank_apikey)
-    # print (f'phishtank_url: {phishtank_url}')
+    # logger.info(f'phishtank_url: {phishtank_url}')
     # openphish = OpenPhishDataSource(OPENPHISH_URL, 'OpenPhish', 1, PHISHING_URL_TOPIC, None)
     # phishtank = PhishTankDataSource(phishtank_url, 'PhishTank', 1, PHISHING_URL_TOPIC, None)
     data_source_arg = args.data_source.lower()
@@ -47,32 +70,41 @@ def main():
         data_source = AlexaDataSource(OPENDNS_URL, OPENDNS_STR, 0, NEW_URL_TOPIC, None)
 
 
+    while(True):
+        redis = StrictRedis(host=args.redis_host, port=args.redis_port, db=args.redis_db)
+        fetch_feed(data_source, args.publish_limit, redis)
+        sleep(600)
+        if not args.infinity:
+            break
 
+
+def fetch_feed(data_source, publish_limit, redis):
     if data_source:
         origin = data_source.get_origin()
-        print (f'handling {origin}')
+        logger.info(f'handling {origin}')
         url_list = data_source.fetch()
-        print (f'len(url_list): {len(url_list)}')
-        print (f'url_list[0]: {url_list[0]}')
+        logger.info(f'len(url_list): {len(url_list)}')
+        logger.info(f'url_list[0]: {url_list[0]}')
         
         latest_url = redis.get(origin)
 
         if latest_url:
             latest_url = latest_url.decode('utf-8')
 
-        print (f'latest_url (from redis): {latest_url}')
+        logger.info(f'latest_url (from redis): {latest_url}')
 
         if latest_url is None or latest_url != url_list[0]:
             last_url_index = len(url_list)
             if latest_url in url_list:
                 last_url_index = url_list.index(latest_url)
-            print (f'fetch done. got {len(url_list)} new urls')
-            print (f'last_url_index: {last_url_index}')
-            for url in url_list[:min(last_url_index, args.publish_limit)]:
+            logger.info(f'fetch done. got {len(url_list)} new urls')
+            logger.info(f'last_url_index: {last_url_index}')
+            for url in url_list[:min(last_url_index, publish_limit)]:
                 message = json.dumps({'url': url, 'label': data_source.get_label()})
                 redis.publish(data_source.get_topic(), message)
-            print (f'update latest url  of {origin} to: {url_list[0]}')
+            logger.info(f'update latest url of {origin} to: {url_list[0]}')
             redis.set(origin, url_list[0], ex=86400)
+
 
 if __name__ == "__main__":
     main()

@@ -1,3 +1,4 @@
+sudo echo "Hello"
 export PHISHTANK_APIKEY="d297d14ebc2b90cfbca8e0b1d041c4dc692e0a4454818659e629a0352048a10e"
 export ASN_DB_PATH="/home/eyalp/domain-classifier/resources"
 sudo service redis-server start
