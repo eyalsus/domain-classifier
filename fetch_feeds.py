@@ -12,26 +12,7 @@ import os
 import logging
 from datetime import datetime
 
-# create logger with 'spam_application'
-logger = logging.getLogger('fetch_feeds')
-logger.setLevel(logging.DEBUG)
-# create file handler which logs even debug messages
-log_dir_path = os.getenv('LOG_DIR_PATH')
-date_str = datetime.now().isoformat().replace(':', '_').split('.')[0]
-log_file_name = f'fetch_feeds_{date_str}.log'
-log_file_path = os.path.join(log_dir_path, log_file_name)
-fh = logging.FileHandler(log_file_path)
-fh.setLevel(logging.DEBUG)
-# create console handler with a higher log level
-ch = logging.StreamHandler()
-ch.setLevel(logging.ERROR)
-# create formatter and add it to the handlers
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-# add the handlers to the logger
-logger.addHandler(fh)
-logger.addHandler(ch)
+logger = None
 
 def main():
     parser = argparse.ArgumentParser()
@@ -43,7 +24,6 @@ def main():
     parser.add_argument("--publish-limit", type=int, default=10000, help="publish limit for fetched URLS")
     args = parser.parse_args()
 
-    logger.info(f'program args: {args}')
     # phishtank_url = PHISHTANK_URL.format(apikey=phishtank_apikey)
     # logger.info(f'phishtank_url: {phishtank_url}')
     # openphish = OpenPhishDataSource(OPENPHISH_URL, 'OpenPhish', 1, PHISHING_URL_TOPIC, None)
@@ -66,6 +46,8 @@ def main():
     elif data_source_arg == OPENDNS_STR.lower():
         data_source = AlexaDataSource(OPENDNS_URL, OPENDNS_STR, 0, NEW_URL_TOPIC, None)
 
+    define_logger(logger, data_source.get_origin())
+    logger.info(f'program args: {args}')
 
     while(True):
         redis = StrictRedis(host=args.redis_host, port=args.redis_port, db=args.redis_db)
@@ -104,6 +86,28 @@ def fetch_feed(data_source, publish_limit, redis):
                 redis.publish(data_source.get_topic(), message)
             logger.info(f'update latest url of {origin} to: {url_list[0]}')
             redis.set(origin, url_list[0], ex=86400)
+
+def define_logger(logger, data_source_name):
+    logger = logging.getLogger(f'fetch_{data_source_name}')
+    logger.setLevel(logging.DEBUG)
+    # create file handler which logs even debug messages
+    log_dir_path = os.getenv('LOG_DIR_PATH')
+    date_str = datetime.now().isoformat().replace(':', '_').split('.')[0]
+    log_file_name = f'fetch_feeds_{date_str}.log'
+    log_file_path = os.path.join(log_dir_path, log_file_name)
+    fh = logging.FileHandler(log_file_path)
+    fh.setLevel(logging.DEBUG)
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.ERROR)
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    # add the handlers to the logger
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+
 
 
 if __name__ == "__main__":
