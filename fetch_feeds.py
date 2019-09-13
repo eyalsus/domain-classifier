@@ -1,6 +1,3 @@
-import pandas as pd
-from google.cloud import storage
-from datetime import datetime
 import json
 from common import get_domain_from_url, get_base_domain
 import DataSource
@@ -9,19 +6,19 @@ from DataSource import PhishTankDataSource, PHISHTANK_URL, PHISHTANK_STR
 from DataSource import AlexaDataSource, ALEXA_URL, ALEXA_STR
 from DataSource import OPENDNS_URL, OPENDNS_STR
 from redis import StrictRedis
-import os
+from time import sleep
 import argparse
+import os
 import logging
 from datetime import datetime
-from time import sleep
 
 # create logger with 'spam_application'
 logger = logging.getLogger('fetch_feeds')
 logger.setLevel(logging.DEBUG)
 # create file handler which logs even debug messages
 log_dir_path = os.getenv('LOG_DIR_PATH')
-dateStr = datetime.now().isoformat().replace(':', '_').split('.')[0]
-log_file_name = f'fetch_feeds_{dateStr}.log'
+date_str = datetime.now().isoformat().replace(':', '_').split('.')[0]
+log_file_name = f'fetch_feeds_{date_str}.log'
 log_file_path = os.path.join(log_dir_path, log_file_name)
 fh = logging.FileHandler(log_file_path)
 fh.setLevel(logging.DEBUG)
@@ -75,8 +72,8 @@ def main():
         fetch_feed(data_source, args.publish_limit, redis)
         if not args.infinity:
             break
-        logger.info('going to sleep now...')
         sleep_duration = int(os.getenv('FETCH_SLEEP_TIME'))
+        logger.info(f'going to sleep now for {sleep_duration} seconds...')
         sleep(sleep_duration)
         logger.info('woke up!')
 
