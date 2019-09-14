@@ -23,7 +23,7 @@ def main():
     parser.add_argument("--redis-db", type=int, default=0, help="redis db index")
     parser.add_argument("--publish-limit", type=int, default=10000, help="publish limit for fetched URLS")
     args = parser.parse_args()
-
+    print (args)
     # phishtank_url = PHISHTANK_URL.format(apikey=phishtank_apikey)
     # logger.info(f'phishtank_url: {phishtank_url}')
     # openphish = OpenPhishDataSource(OPENPHISH_URL, 'OpenPhish', 1, PHISHING_URL_TOPIC, None)
@@ -45,6 +45,7 @@ def main():
 
     elif data_source_arg == OPENDNS_STR.lower():
         data_source = AlexaDataSource(OPENDNS_URL, OPENDNS_STR, 0, NEW_URL_TOPIC, None)
+    
 
     global logger
     logger = define_logger(data_source.get_origin())

@@ -9,12 +9,12 @@ import logging
 from datetime import datetime
 
 # create logger with 'spam_application'
-logger = logging.getLogger('enrich_domain')
+logger = logging.getLogger('database_connector')
 logger.setLevel(logging.DEBUG)
 # create file handler which logs even debug messages
 log_dir_path = os.getenv('LOG_DIR_PATH')
 date_str = datetime.now().isoformat().replace(':', '_').split('.')[0]
-log_file_name = f'enrich_domain_{date_str}.log'
+log_file_name = f'database_connector_{date_str}.log'
 log_file_path = os.path.join(log_dir_path, log_file_name)
 fh = logging.FileHandler(log_file_path)
 fh.setLevel(logging.DEBUG)
