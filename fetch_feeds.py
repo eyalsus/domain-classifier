@@ -46,7 +46,7 @@ def main():
     elif data_source_arg == OPENDNS_STR.lower():
         data_source = AlexaDataSource(OPENDNS_URL, OPENDNS_STR, 0, NEW_URL_TOPIC, None)
     
-
+    print (f'data_source: {data_source.get_origin}')
     global logger
     logger = define_logger(data_source.get_origin())
     logger.info(f'program args: {args}')
