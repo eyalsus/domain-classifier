@@ -1,3 +1,5 @@
+select * from domains order by timestamp desc limit 10;
+
 CREATE TABLE domains (
     id serial PRIMARY KEY,
     domain varchar (256) NOT NULL,
