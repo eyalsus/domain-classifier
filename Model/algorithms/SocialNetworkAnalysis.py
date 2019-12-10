@@ -1,6 +1,5 @@
 import networkx as nx
 
-
 class SocialNetworkAnalysis(object):
     
     
@@ -10,7 +9,6 @@ class SocialNetworkAnalysis(object):
 
     def copy_graph(self):
         self.H = self.G.copy()
-
 
     # def append_row_to_graph(self, row, cascade_updates=False):
     def append_row_to_graph(self, row):

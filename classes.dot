@@ -1,11 +1,9 @@
 digraph "classes" {
 charset="utf-8"
 rankdir=BT
-"0" [label="{AlexaDataSource|\l|fetch()\l}", shape="record"];
-"1" [label="{DataSource|\l|fetch()\lget_label()\lget_origin()\lget_subscription()\lget_topic()\l}", shape="record"];
-"2" [label="{OpenPhishDataSource|\l|fetch()\l}", shape="record"];
-"3" [label="{PhishTankDataSource|\l|fetch()\l}", shape="record"];
+"0" [label="{MarkovModel|domain_name_set : set, NoneType\lmodel : NoneType, MarkovChain\lstates_set : set, NoneType\lword_statistics : dict, NoneType\lwords_in_domain_counter : NoneType, Counter\l|convert_counter_to_probabilities(transitions_counter, round_ndigits)\lconvert_probabilities_to_model(words_transitions_prob)\lcreate_random_domain_name(model, word_statistics, initial_state)\ldomain_to_word_features(domain_list)\lextract_transitions_probabilities(word_statistics, states_set)\lpredict(X)\ltrain(X, y)\l}", shape="record"];
+"1" [label="{Model|\l|predict(X)\ltrain(X, y)\l}", shape="record"];
+"2" [label="{SnaModel|G : Graph\l|append_row_to_graph(row, G)\lpredict(X)\lstable_graph(graph, iterations)\ltrain(X, y)\l}", shape="record"];
 "0" -> "1" [arrowhead="empty", arrowtail="none"];
 "2" -> "1" [arrowhead="empty", arrowtail="none"];
-"3" -> "1" [arrowhead="empty", arrowtail="none"];
 }
