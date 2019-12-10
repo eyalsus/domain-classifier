@@ -11,7 +11,6 @@ import os
 import logging
 from datetime import datetime
 
-# create logger with 'spam_application'
 logger = logging.getLogger('enrich_domain')
 logger.setLevel(logging.DEBUG)
 # create file handler which logs even debug messages
@@ -31,13 +30,15 @@ ch.setFormatter(formatter)
 # add the handlers to the logger
 logger.addHandler(fh)
 logger.addHandler(ch)
+logger.info('logger is ready!')
 
 def main():
     logger.info('main start')
+    print('main start print')
     redis = StrictRedis(host='localhost', port=6379, db=0)
     pubsub = redis.pubsub()
     pubsub.subscribe(NEW_URL_TOPIC)
-    logger.info('start listening...')
+    logger.info('going into listening mode...')
     for message in pubsub.listen():
         try:
             if message['type'] == 'message':

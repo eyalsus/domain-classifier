@@ -37,7 +37,8 @@ def main():
     engine = create_engine('postgresql://postgres:mypassword@localhost:5432/')
     pubsub = redis.pubsub()                                                        
     pubsub.subscribe(ENRICHED_DOMAIN)
-    commit_batch = []                             
+    commit_batch = []
+    logger.info('going into listening mode...')                     
     for message in pubsub.listen():
         try:
             domain = message['data']

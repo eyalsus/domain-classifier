@@ -89,6 +89,7 @@ def fetch_feed(data_source, publish_limit, redis):
             logger.info(f'update latest url of {origin} to: {url_list[0]}')
             redis.set(origin, url_list[0], ex=86400)
 
+
 def define_logger(data_source_name):
     logger = logging.getLogger(f'fetch_{data_source_name}')
     logger.setLevel(logging.DEBUG)

@@ -7,14 +7,19 @@ import pandas as pd
 from common import get_domain_from_url, get_base_domain, read_file
 from datetime import datetime
 import os
-class _FeatureExtraction(object):
+import codecs
 
-    
+class _FeatureExtraction(object):
     def  __init__(self):
         asn_path = os.getenv('ASN_DB_PATH')
         self.asndb = pyasn.pyasn(os.path.join(asn_path, 'asn20190719.db'))
-        data = download_asnames()
+        with codecs.open(os.path.join(asn_path, 'autnums.html'), mode='r', encoding='latin-1') as f:
+            data = f.read()
+        # print('download_asnames')
+        # data = download_asnames()
         self.asn_dict = _html_to_dict(data)
+        print(f'asn dict len {self.asn_dict}')
+        print(self.__get_as_name('169'))
 
 
     def extract_domain_features(self, domain, label):
@@ -187,5 +192,9 @@ class _FeatureExtraction(object):
             as_name = self.asn_dict[as_number]
         return as_name
 
-
+import time
+start = time.time()
+print('building feature_extractor')
 feature_extractor =  _FeatureExtraction()
+end = time.time()
+print(f'build done on {end - start} sec')
