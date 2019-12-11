@@ -7,3 +7,6 @@ class Model(object):
 
     def predict(self, X):
         pass
+
+    def __str__(self):
+        return type(self).__name__
