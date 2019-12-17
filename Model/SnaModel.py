@@ -3,24 +3,26 @@ from Model.Model import Model
 
 
 class SnaModel(Model):
-    def __init__(self):
-        self.G = nx.Graph()
+    def __init__(self, logger=None):
+        super().__init__(logger)
+        self._G = nx.Graph()
 
     def train(self, X, y=None):
-        X.apply(self.__append_row_to_graph, args=(self.G,), axis=1)
+        super().train(X, y)
+        X.apply(self._append_row_to_graph, args=(self._G,), axis=1)
 
     def predict(self, X):
-        H = self.G.copy()
-        X.apply(self.__append_row_to_graph, args=(H,), axis=1)
+        H = self._G.copy()
+        X.apply(self._append_row_to_graph, args=(H,), axis=1)
         # E = nx.ego_graph(H, X['domain'], radius=5, center=True)
         # if None in E:
         #     E.remove_node(None)
-        self.__stable_graph(H, iterations=5)
+        self._stable_graph(H, iterations=5)
 
         # return E.nodes()[X['domain']]['current']
         return X['domain'].apply(lambda x: H.nodes()[x]['current'])
 
-    def __append_row_to_graph(self, row, G):
+    def _append_row_to_graph(self, row, G):
         G.add_node(row['domain'], start=row['label'], current=row['label'])
         G.add_node(row['domain_ip'], start=row['label'], current=row['label'])
         G.add_node(row['as_subnet'], start=0.5, current=0.5)
@@ -44,16 +46,16 @@ class SnaModel(Model):
         if None in G:
             G.remove_node(None)
 
-    def __stable_graph(self, graph, iterations=10):
+    def _stable_graph(self, graph, iterations=10):
         for _ in range(iterations):
-            self.__graph_iteration(graph)
+            self._graph_iteration(graph)
 
-    def __graph_iteration(self, graph):
+    def _graph_iteration(self, graph):
         # H = self.G.copy()
         for node in graph.nodes():
-            self.__update_node(graph, node)
+            self._update_node(graph, node)
 
-    def __update_node(self, graph, node):
+    def _update_node(self, graph, node):
         try:
             if graph.degree(node) > 0:
                 neighbors_current_score = 0
@@ -63,8 +65,5 @@ class SnaModel(Model):
                     graph.degree(node)
                 graph.nodes[node]['current'] = 0.5 * \
                     graph.nodes[node]['current'] + 0.5 * neighbors_current_avg
-        except:
-            print('-----------------------------')
-            print(
-                f'exception in __update_node\nnode: {node}\ntype(node): {type(node)}\ngraph nodes {graph.nodes()}]\ngraph edges: {graph.edges()}')
-            print('-----------------------------')
+        except Exception:
+            self.logger.exception('update_node exception on node: %s', node)

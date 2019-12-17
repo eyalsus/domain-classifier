@@ -8,38 +8,41 @@ from Model.Model import Model
 
 
 class MarkovModel(Model):
-    def __init__(self):
-        self.__word_statistics = None
-        self.__states_set = None
-        self.__words_in_domain_counter = None
-        self.__model = None
+    def __init__(self, logger=None):
+        super().__init__(logger)
+        self._word_statistics = None
+        self._states_set = None
+        self._words_in_domain_counter = None
+        self._markov_chain = None
         self.domain_name_set = None
 
     def train(self, X, y=None):
-        self.__word_statistics, self.__states_set, self.__words_in_domain_counter = \
-            self.__domain_to_word_features(list(X['base_domain']))
-        words_transitions_prob = self.__extract_transitions_probabilities(
-            self.__word_statistics, self.__states_set)
-        self.__model = self.__convert_probabilities_to_model(
+        super().train(X, y)
+        domain_name_blacklist = set(X['domain_name'])
+        self._word_statistics, self._states_set, self._words_in_domain_counter = \
+            self._domain_to_word_features(domain_name_blacklist)
+        words_transitions_prob = self._extract_transitions_probabilities(
+            self._word_statistics, self._states_set)
+        self._markov_chain = self._convert_probabilities_to_model(
             words_transitions_prob)
         self.domain_name_set = set()
-        for word in self.__states_set:
+        for word in self._states_set:
             for _ in range(10):
-                random_domain_name = self.__create_random_domain_name(
-                    self.__model, self.__word_statistics, word)
-                self.domain_name_set.add(random_domain_name)
+                predict_domain_name = self._create_random_domain_name(self._markov_chain, self._word_statistics, word)
+                if predict_domain_name not in domain_name_blacklist:
+                    self.domain_name_set.add(predict_domain_name)
 
     def predict(self, X=None):
         return X['domain_name'].apply(lambda x: int(x in self.domain_name_set))
 
-    def __create_random_domain_name(self, model, word_statistics, initial_state):
+    def _create_random_domain_name(self, model, word_statistics, initial_state):
         domain_name = None
         word_list = [initial_state]
         current_state = initial_state
         while len(word_list) < 25 and len(word_statistics[current_state]['transitions']) > 0:
             current_state = model.next_state(current_state)
             word_list.append(current_state)
-            prob_dict = self.__convert_counter_to_probabilities(
+            prob_dict = self._convert_counter_to_probabilities(
                 word_statistics[current_state]['sentence_length'])
             current_word_sentence_length = np.random.choice(
                 list(prob_dict.keys()), p=list(prob_dict.values()))
@@ -49,20 +52,21 @@ class MarkovModel(Model):
             domain_name = ''.join(word_list)
         return domain_name
 
-    def __domain_to_word_features(self, domain_list):
+    def _domain_to_word_features(self, domain_name_set):
         states_set = set()
         words_in_domain_counter = Counter()
         word_statistics = {}
 
         domain_index = 0
-        for domain in domain_list:
+        for domain in domain_name_set:
             if domain_index % 100 == 0:
-                print(domain_index)
+                self.logger.debug(domain_index)
 
             domain_index += 1
-            exr = tldextract.extract(domain)
+            # exr = tldextract.extract(domain)
             # consider adding .replace('-','')) #.replace('2', 'to').replace('4', 'for'))
-            words = splitter.split(exr.domain)
+            # words = splitter.split(exr.domain)
+            words = splitter.split(domain)
             words = [word.lower() for word in words]
             words_in_domain_counter.update([len(words)])
             word_index = 0
@@ -89,7 +93,7 @@ class MarkovModel(Model):
                     states_set.add(next_word)
         return word_statistics, states_set, words_in_domain_counter
 
-    def __convert_counter_to_probabilities(self, transitions_counter, round_ndigits=8):
+    def _convert_counter_to_probabilities(self, transitions_counter, round_ndigits=8):
         transitions_probabilities = {}
         word_sum = sum(transitions_counter.values())
 
@@ -110,17 +114,17 @@ class MarkovModel(Model):
                     break
         return transitions_probabilities
 
-    def __extract_transitions_probabilities(self, word_statistics, states_set):
+    def _extract_transitions_probabilities(self, word_statistics, states_set):
         words_transitions_prob = {}
         for word in states_set:
-            words_transitions_prob[word] = self.__convert_counter_to_probabilities(
+            words_transitions_prob[word] = self._convert_counter_to_probabilities(
                 word_statistics[word]['transitions'])
         for state in states_set:
             if state not in words_transitions_prob:
                 words_transitions_prob[state] = {}
         return words_transitions_prob
 
-    def __convert_probabilities_to_model(self, words_transitions_prob):
+    def _convert_probabilities_to_model(self, words_transitions_prob):
         df = pd.DataFrame.from_dict(words_transitions_prob).T
         df.fillna(0, inplace=True)
         transition_matrix = df[df.index].to_numpy()

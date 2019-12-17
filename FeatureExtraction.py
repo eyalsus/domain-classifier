@@ -4,7 +4,7 @@ import pyasn
 from netaddr import IPNetwork
 from pyasn_util_asnames import download_asnames, _html_to_dict
 import pandas as pd
-from common import get_domain_from_url, get_base_domain, read_file
+from common import get_domain_from_url, get_base_domain
 from datetime import datetime
 import os
 import codecs
@@ -12,6 +12,7 @@ import codecs
 class _FeatureExtraction(object):
     def  __init__(self):
         asn_path = os.getenv('ASN_DB_PATH')
+        print(f'asn_path: {asn_path}')
         self.asndb = pyasn.pyasn(os.path.join(asn_path, 'asn20190719.db'))
         with codecs.open(os.path.join(asn_path, 'autnums.html'), mode='r', encoding='latin-1') as f:
             data = f.read()
@@ -172,7 +173,7 @@ class _FeatureExtraction(object):
             try:
                 asn, subnet = self.asndb.lookup(ip)
                 as_number = str(asn)
-            except:
+            except Exception:
                 print(f'cannot resolve ASN for ip: {ip}')
         return as_number, subnet
 
@@ -181,7 +182,7 @@ class _FeatureExtraction(object):
         network = None
         try:
             network = str(IPNetwork(f'{ip}/{mask}').cidr)
-        except:
+        except Exception:
             print(f'cannot resolve network for ip: {ip}')
         return network
 

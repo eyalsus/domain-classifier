@@ -9,8 +9,8 @@ sudo service redis-server restart
 sudo service postgresql restart
 nohup python3 /home/eyalp/domain-classifier/enrich_domain.py &
 sleep 5
-nohup python3 /home/eyalp/domain-classifier/database_connector.py &
-sleep 5
+#nohup python3 /home/eyalp/domain-classifier/database_connector.py &
+#sleep 5
 nohup python3 /home/eyalp/domain-classifier/fetch_feeds.py --data-source PhishTank --infinity &
 sleep 5
 nohup python3 /home/eyalp/domain-classifier/fetch_feeds.py --data-source OpenPhish --infinity &

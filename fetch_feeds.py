@@ -1,6 +1,4 @@
 import json
-from common import get_domain_from_url, get_base_domain
-import DataSource
 from DataSource import OpenPhishDataSource, OPENPHISH_URL, OPENPHISH_STR, NEW_URL_TOPIC
 from DataSource import PhishTankDataSource, PHISHTANK_URL, PHISHTANK_STR
 from DataSource import AlexaDataSource, ALEXA_URL, ALEXA_STR
@@ -17,11 +15,12 @@ logger = None
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--infinity", action='store_true')
+    parser.add_argument("--sleep", type=int, default=10000, help="sleep seconds, relevant only on infinity mode")
     parser.add_argument("--data-source", type=str, help="datasource to fetch")
     parser.add_argument("--redis-host", type=str, default='localhost', help="redis hostname")
     parser.add_argument("--redis-port", type=int, default=6379, help="redis port")
     parser.add_argument("--redis-db", type=int, default=0, help="redis db index")
-    parser.add_argument("--publish-limit", type=int, default=10000, help="publish limit for fetched URLS")
+    parser.add_argument("--limit", type=int, default=10000, help="publish limit for fetched URLs")
     args = parser.parse_args()
     print (args)
     # phishtank_url = PHISHTANK_URL.format(apikey=phishtank_apikey)
@@ -49,15 +48,16 @@ def main():
     print (f'data_source: {data_source.get_origin}')
     global logger
     logger = define_logger(data_source.get_origin())
-    logger.info(f'program args: {args}')
+    logger.info('program args: %s', args)
 
     while(True):
         redis = StrictRedis(host=args.redis_host, port=args.redis_port, db=args.redis_db)
-        fetch_feed(data_source, args.publish_limit, redis)
+        fetch_feed(data_source, args.limit, redis)
         if not args.infinity:
             break
-        sleep_duration = int(os.getenv('FETCH_SLEEP_TIME'))
-        logger.info(f'going to sleep now for {sleep_duration} seconds...')
+        sleep_duration = args.sleep
+        # sleep_duration = int(os.getenv('FETCH_SLEEP_TIME'))
+        logger.info('going to sleep now for %d seconds...', sleep_duration)
         sleep(sleep_duration)
         logger.info('woke up!')
 
@@ -65,28 +65,28 @@ def main():
 def fetch_feed(data_source, publish_limit, redis):
     if data_source:
         origin = data_source.get_origin()
-        logger.info(f'handling {origin}')
+        logger.info('handling %s', origin)
         url_list = data_source.fetch()
-        logger.info(f'len(url_list): {len(url_list)}')
-        logger.info(f'url_list[0]: {url_list[0]}')
+        logger.info('len(url_list): %d', len(url_list))
+        logger.info('url_list[0]: %s', url_list[0])
         
         latest_url = redis.get(origin)
 
         if latest_url:
             latest_url = latest_url.decode('utf-8')
 
-        logger.info(f'latest_url (from redis): {latest_url}')
+        logger.info('latest_url (from redis): %s', latest_url)
 
         if latest_url is None or latest_url != url_list[0]:
             last_url_index = len(url_list)
             if latest_url in url_list:
                 last_url_index = url_list.index(latest_url)
-            logger.info(f'fetch done. got {len(url_list)} new urls')
-            logger.info(f'last_url_index: {last_url_index}')
+            logger.info('fetch done. got %d new urls', len(url_list))
+            logger.info('last_url_index: %d', last_url_index)
             for url in url_list[:min(last_url_index, publish_limit)]:
                 message = json.dumps({'url': url, 'label': data_source.get_label()})
                 redis.publish(data_source.get_topic(), message)
-            logger.info(f'update latest url of {origin} to: {url_list[0]}')
+            logger.info('update latest url of %s to: %s', origin, url_list[0])
             redis.set(origin, url_list[0], ex=86400)
 
 
