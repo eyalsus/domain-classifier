@@ -14,9 +14,6 @@ class SnaModel(Model):
     def predict(self, X):
         H = self._G.copy()
         X.apply(self._append_row_to_graph, args=(H,), axis=1)
-        # E = nx.ego_graph(H, X['domain'], radius=5, center=True)
-        # if None in E:
-        #     E.remove_node(None)
         self._stable_graph(H, iterations=5)
 
         # return E.nodes()[X['domain']]['current']
@@ -51,7 +48,6 @@ class SnaModel(Model):
             self._graph_iteration(graph)
 
     def _graph_iteration(self, graph):
-        # H = self.G.copy()
         for node in graph.nodes():
             self._update_node(graph, node)
 

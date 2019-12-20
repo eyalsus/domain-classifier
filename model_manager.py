@@ -42,15 +42,14 @@ def train(db_conn, pkl_path, limit=10000):
     X_malicious = db_conn.get_records(label=1, limit=limit, hosting=False, columns=None)
     X = pd.concat([X_malicious, X_benign])
     y = X['label']
-    print(f'X_malicious: {len(X_malicious)}, X_benign: {len(X_benign)}, X: {len(X)}')
-    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    logger.info('X_malicious: %d, X_benign: %d, X: %d', len(X_malicious), len(X_benign), len(X))
 
-    xgb_ml_model = MLModel(XGBClassifier())
-    lr_ml_model = MLModel(LogisticRegression(solver='lbfgs'))
-    sna_model = SnaModel()
-    markov_model = MarkovModel()
+    xgb_ml_model = MLModel(XGBClassifier(), logger=logger)
+    lr_ml_model = MLModel(LogisticRegression(solver='lbfgs'), logger=logger)
+    sna_model = SnaModel(logger=logger)
+    markov_model = MarkovModel(logger=logger)
     model_list = [lr_ml_model, xgb_ml_model, markov_model, sna_model]
-    agg_model = AggragatorModel(model_list)
+    agg_model = AggragatorModel(model_list, logger=logger)
     agg_model.train(X, y)
     agg_model.save_model(pkl_path)
     return agg_model
@@ -83,7 +82,7 @@ def listen(db_conn, pkl_path, limit, retrain):
                 logger.debug('predict_dict %s', predict_dict)
                 join_dict = {**features_dict, **predict_dict}
                 logger.debug('join_dict %s', join_dict)
-                redis.set(domain, json.dumps(join_dict), ex=7200)
+                redis.set(domain, json.dumps(join_dict), ex=14400)
                 logger.debug(predict_df)
                 predict_batch.append(domain)
                 logger.info('len(predict_batch): %d', len(predict_batch))

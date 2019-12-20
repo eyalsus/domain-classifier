@@ -23,7 +23,7 @@ class MLModel(Model):
 
     def predict(self, X):
         start = time()
-        X = pd.get_dummies(X[MLModel.feature_dummies])
+        X = pd.get_dummies(X[DUMMY_FEATURE_LIST])
         dummies_time = time()
         self.logger.debug(f'get_dummies duration: {dummies_time - start}')
         zeros_df = pd.DataFrame(0, index=X.index, columns=self.features_list)
@@ -48,4 +48,4 @@ class MLModel(Model):
         return y_pred
 
     def __str__(self):
-        return f'{type(self).__name__}_{type(self.__clf).__name__}'
+        return f'{type(self).__name__}_{type(self._clf).__name__}'

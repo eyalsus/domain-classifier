@@ -32,7 +32,7 @@ def main():
                         continue
                     features = feature_extractor.extract_domain_features(domain, label)
                     logger.debug('domain: %s features %s', domain, features)
-                    redis.set(domain, json.dumps(features), ex=7200)
+                    redis.set(domain, json.dumps(features), ex=14400)
                     redis.publish(ENRICHED_DOMAIN, domain)
                     logger.info('published %s to channel %s', domain, ENRICHED_DOMAIN)
         except ConnectionError:
