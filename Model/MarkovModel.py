@@ -28,7 +28,8 @@ class MarkovModel(Model):
         self.domain_name_set = set()
         for word in self._states_set:
             for _ in range(10):
-                predict_domain_name = self._create_random_domain_name(self._markov_chain, self._word_statistics, word)
+                predict_domain_name = self._create_random_domain_name(
+                    self._markov_chain, self._word_statistics, word)
                 if predict_domain_name not in domain_name_blacklist:
                     self.domain_name_set.add(predict_domain_name)
 

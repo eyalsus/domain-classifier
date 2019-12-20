@@ -1,19 +1,21 @@
-select * from domains order by timestamp desc limit 10;
+-- average per classifier
+select label, count(1),avg(mlmodel_xgbclassifier), avg(mlmodel_logisticregression), avg(snamodel), avg(markovmodel)
+from domains 
+where train_date is not null
+group by label;
 
-CREATE TABLE domains (
-    id serial PRIMARY KEY,
-    domain varchar (256) NOT NULL,
-    base_domain varchar (256) NOT NULL,
-    domain_name varchar (256) NOT NULL,
-    domain_ip varchar (256),
-    as_number integer,
-    as_subnet varchar (256),
-    as_name varchar (256),
-    nameserver varchar (256),
-    ns_base_domain varchar (256),
-    ns_domain_ip varchar (256),
-    ns_as_number integer,
-    ns_as_subnet varchar (256),
-    ns_as_name varchar (256),
-    insert_date date
-);
+-- markov model
+select *
+from domains 
+where train_date is not null
+and markovmodel = 1;
+
+select *
+from domains
+where timestamp > NOW() - INTERVAL '3 DAY'
+order by timestamp  desc
+limit 100;
+
+-- delete
+-- from domains
+-- where timestamp > NOW() - INTERVAL '1 DAY'
