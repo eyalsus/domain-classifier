@@ -1,32 +1,30 @@
 import json
-from DataSource import OpenPhishDataSource, OPENPHISH_URL, OPENPHISH_STR, NEW_URL_TOPIC
-from DataSource import PhishTankDataSource, PHISHTANK_URL, PHISHTANK_STR
-from DataSource import AlexaDataSource, ALEXA_URL, ALEXA_STR
-from DataSource import OPENDNS_URL, OPENDNS_STR
 from redis import StrictRedis
 from time import sleep
 import argparse
 import os
 import logging
 from datetime import datetime
+from DataSource import OpenPhishDataSource, OPENPHISH_URL, OPENPHISH_STR, NEW_URL_TOPIC
+from DataSource import PhishTankDataSource, PHISHTANK_URL, PHISHTANK_STR
+from DataSource import AlexaDataSource, ALEXA_URL, ALEXA_STR
+from DataSource import OPENDNS_URL, OPENDNS_STR
+from common import define_logger
 
 logger = None
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--infinity", action='store_true')
+    parser.add_argument("--infinity", action='store_true', help='infinte run')
     parser.add_argument("--sleep", type=int, default=10000, help="sleep seconds, relevant only on infinity mode")
-    parser.add_argument("--data-source", type=str, help="datasource to fetch")
-    parser.add_argument("--redis-host", type=str, default='localhost', help="redis hostname")
+    parser.add_argument("--data-source", type=str, help="data source to fetch")
+    parser.add_argument("--redis-host", type=str, default='localhost', help="redis host")
     parser.add_argument("--redis-port", type=int, default=6379, help="redis port")
     parser.add_argument("--redis-db", type=int, default=0, help="redis db index")
     parser.add_argument("--limit", type=int, default=10000, help="publish limit for fetched URLs")
+    parser.add_argument("--debug-level", type=str, default='INFO', help='logging debug level')
     args = parser.parse_args()
-    print (args)
-    # phishtank_url = PHISHTANK_URL.format(apikey=phishtank_apikey)
-    # logger.info(f'phishtank_url: {phishtank_url}')
-    # openphish = OpenPhishDataSource(OPENPHISH_URL, 'OpenPhish', 1, PHISHING_URL_TOPIC, None)
-    # phishtank = PhishTankDataSource(phishtank_url, 'PhishTank', 1, PHISHING_URL_TOPIC, None)
+    print(args)
     data_source_arg = args.data_source.lower()
     data_source = None
     if data_source_arg == OPENPHISH_STR.lower():
@@ -45,11 +43,11 @@ def main():
     elif data_source_arg == OPENDNS_STR.lower():
         data_source = AlexaDataSource(OPENDNS_URL, OPENDNS_STR, 0, NEW_URL_TOPIC, None)
     
-    print (f'data_source: {data_source.get_origin}')
     global logger
     logger = define_logger(data_source.get_origin())
     logger.info('program args: %s', args)
-
+    logger.info('data_source: %s', data_source.get_origin())
+    
     while(True):
         redis = StrictRedis(host=args.redis_host, port=args.redis_port, db=args.redis_db)
         fetch_feed(data_source, args.limit, redis)
@@ -88,30 +86,6 @@ def fetch_feed(data_source, publish_limit, redis):
                 redis.publish(data_source.get_topic(), message)
             logger.info('update latest url of %s to: %s', origin, url_list[0])
             redis.set(origin, url_list[0], ex=86400)
-
-
-def define_logger(data_source_name):
-    logger = logging.getLogger(f'fetch_{data_source_name}')
-    logger.setLevel(logging.DEBUG)
-    # create file handler which logs even debug messages
-    log_dir_path = os.getenv('LOG_DIR_PATH')
-    date_str = datetime.now().isoformat().replace(':', '_').split('.')[0]
-    log_file_name = f'fetch_{data_source_name}_{date_str}.log'
-    log_file_path = os.path.join(log_dir_path, log_file_name)
-    fh = logging.FileHandler(log_file_path)
-    fh.setLevel(logging.DEBUG)
-    # create console handler with a higher log level
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.ERROR)
-    # create formatter and add it to the handlers
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
-    # add the handlers to the logger
-    logger.addHandler(fh)
-    logger.addHandler(ch)
-    return logger
-
 
 if __name__ == "__main__":
     main()

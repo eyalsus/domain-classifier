@@ -10,12 +10,22 @@ LOGGER_NAME = 'enrich_domain'
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--postgresql-host", type=str, default='localhost', help="postgresql host")
+    parser.add_argument("--postgresql-port", type=int, default=5432, help="postgresql port")
+    parser.add_argument("--postgresql-username", type=str, help="postgresql username")
+    parser.add_argument("--postgresql-password", type=str, help="postgresql password")
     parser.add_argument("--debug-level", type=str, default='INFO', help='logging debug level')
     args = parser.parse_args()
     logger = define_logger(LOGGER_NAME, args.debug_level)
     logger.debug('args: %s', args)
     redis = StrictRedis(host='localhost', port=6379, db=0)
-    db_conn = DatabaseConnector(logger)
+    db_conn = DatabaseConnector(
+        args.postgresql_username,
+        args.postgresql_password,
+        args.postgresql_host,
+        args.postgresql_port,
+        logger
+    )
     pubsub = redis.pubsub()
     pubsub.subscribe(NEW_URL_TOPIC)
     logger.info('going into listening mode...')

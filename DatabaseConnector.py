@@ -6,17 +6,17 @@ import logging
 import sys
 
 COMMIT_BATCH_SIZE = 10
-CONNECTION_STRING = 'postgresql://postgres:mypassword@localhost:5432/'
+CONNECTION_STRING = 'postgresql://{username}:{password}@{hostname}:{port}/'
 HOSTING_QUERY = "AND base_domain NOT IN ('000webhostapp.com', 'azurewebsites.net', 'duckdns.org', 'no-ip.com', 'no-ip.org', 'wixsite.com')"
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 REDIS_DB = 0
 
 class DatabaseConnector(object):
-    def __init__(self, logger=None):
+    def __init__(self, username, password, hostname, port, logger=None):
         self.set_logger(logger)
         self.commit_batch = []
-        self.engine = create_engine(CONNECTION_STRING)
+        self.engine = create_engine(f'postgresql://{username}:{password}@{hostname}:{port}/')
         self.redis = StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
 
     def set_logger(self, logger):

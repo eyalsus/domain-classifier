@@ -27,11 +27,19 @@ class MarkovModel(Model):
             words_transitions_prob)
         self.domain_name_set = set()
         for word in self._states_set:
-            for _ in range(10):
+            init_set_len = len(self.domain_name_set) 
+            for i in range(100):
                 predict_domain_name = self._create_random_domain_name(
                     self._markov_chain, self._word_statistics, word)
-                if predict_domain_name not in domain_name_blacklist:
+                if predict_domain_name is not None \
+                    and predict_domain_name not in domain_name_blacklist \
+                    and predict_domain_name not in self.domain_name_set \
+                    and len(predict_domain_name) > 5:
                     self.domain_name_set.add(predict_domain_name)
+                elif predict_domain_name is None \
+                    or len(self.domain_name_set) + 10 < init_set_len + i:
+                    break
+
 
     def predict(self, X=None):
         return X['domain_name'].apply(lambda x: int(x in self.domain_name_set))

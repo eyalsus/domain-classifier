@@ -23,15 +23,25 @@ def main():
     parser.add_argument("--train", action='store_true', help='train new models')
     parser.add_argument("--listen", action='store_true', help='listen for new enriched domains')
     parser.add_argument("--logger", type=str, default='model_manager', help='logger name')
-    parser.add_argument("--pkl-path", type=str, default='10K10K.pkl', help='path to pickle file')
+    parser.add_argument("--pkl-path", type=str, default='10K10K.pkl', help='path to pickle to save/load the model file')
     parser.add_argument("--limit", type=int, default=1000, help='limit records per classification')
     parser.add_argument("--retrain", type=int, default=0, help='model retraining every X hours, 0 for no retraining')
+    parser.add_argument("--postgresql-host", type=str, default='localhost', help="postgresql host")
+    parser.add_argument("--postgresql-port", type=int, default=5432, help="postgresql port")
+    parser.add_argument("--postgresql-username", type=str, help="postgresql username")
+    parser.add_argument("--postgresql-password", type=str, help="postgresql password")
     parser.add_argument("--debug-level", type=str, default='INFO', help='logging debug level')
     args = parser.parse_args()
     print(args)
     global logger 
     logger = define_logger(args.logger, args.debug_level)
-    db_conn = DatabaseConnector(logger)
+    db_conn = DatabaseConnector(
+        args.postgresql_username,
+        args.postgresql_password,
+        args.postgresql_host,
+        args.postgresql_port,
+        logger
+    )
     if args.train:
         train(db_conn, args.pkl_path, args.limit)
     if args.listen:
