@@ -19,12 +19,14 @@ class _FeatureExtraction(object):
         # print('download_asnames')
         # data = download_asnames()
         self.asn_dict = _html_to_dict(data)
-        print(f'asn dict len {self.asn_dict}')
-        print(self.__get_as_name('169'))
+        # print(f'asn dict len {self.asn_dict}')
+        # print(self.__get_as_name('169'))
 
 
-    def extract_domain_features(self, domain, label):
-        features = {'domain': domain, 'label': label}
+    def extract_domain_features(self, domain, label=None):
+        features = {'domain': domain}
+        if label is not None:
+            features['label'] = label
         features['timestamp'] = datetime.now().isoformat()
         
         base_domain = get_base_domain(domain)

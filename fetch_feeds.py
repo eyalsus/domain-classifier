@@ -3,8 +3,6 @@ from redis import StrictRedis
 from time import sleep
 import argparse
 import os
-import logging
-from datetime import datetime
 from DataSource import OpenPhishDataSource, OPENPHISH_URL, OPENPHISH_STR, NEW_URL_TOPIC
 from DataSource import PhishTankDataSource, PHISHTANK_URL, PHISHTANK_STR
 from DataSource import AlexaDataSource, ALEXA_URL, ALEXA_STR
@@ -44,7 +42,7 @@ def main():
         data_source = AlexaDataSource(OPENDNS_URL, OPENDNS_STR, 0, NEW_URL_TOPIC, None)
     
     global logger
-    logger = define_logger(data_source.get_origin())
+    logger = define_logger(data_source.get_origin(), args.debug_level)
     logger.info('program args: %s', args)
     logger.info('data_source: %s', data_source.get_origin())
     
@@ -75,15 +73,20 @@ def fetch_feed(data_source, publish_limit, redis):
 
         logger.info('latest_url (from redis): %s', latest_url)
 
-        if latest_url is None or latest_url != url_list[0]:
+        if data_source.get_label() == 0 or latest_url is None or latest_url != url_list[0]:
             last_url_index = len(url_list)
-            if latest_url in url_list:
+            if data_source.get_label() == 0 or latest_url not in url_list:
+                last_url_index = len(url_list) - 1
+            else:
                 last_url_index = url_list.index(latest_url)
             logger.info('fetch done. got %d new urls', len(url_list))
             logger.info('last_url_index: %d', last_url_index)
+
             for url in url_list[:min(last_url_index, publish_limit)]:
                 message = json.dumps({'url': url, 'label': data_source.get_label()})
+                logger.debug('publish message: %s', message)
                 redis.publish(data_source.get_topic(), message)
+
             logger.info('update latest url of %s to: %s', origin, url_list[0])
             redis.set(origin, url_list[0], ex=86400)
 

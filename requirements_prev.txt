@@ -1,0 +1,13 @@
+tldextract
+pyenchant
+compound-word-splitter
+numpy
+pandas
+dnspython
+pyasn
+netaddr
+flask
+networkx
+cython
+sqlalchemy
+psycopg2

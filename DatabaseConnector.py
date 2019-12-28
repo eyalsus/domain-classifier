@@ -7,7 +7,10 @@ import sys
 
 COMMIT_BATCH_SIZE = 10
 CONNECTION_STRING = 'postgresql://{username}:{password}@{hostname}:{port}/'
-HOSTING_QUERY = "AND base_domain NOT IN ('000webhostapp.com', 'azurewebsites.net', 'duckdns.org', 'no-ip.com', 'no-ip.org', 'wixsite.com')"
+HOSTING_QUERY = "AND base_domain NOT IN (  \
+    '000webhostapp.com', 'azurewebsites.net', 'duckdns.org', \
+    'no-ip.com', 'no-ip.org', 'wixsite.com', 'github.io', \
+    'webcindario.com')"
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 REDIS_DB = 0
@@ -64,6 +67,16 @@ class DatabaseConnector(object):
             res += COMMIT_BATCH_SIZE
             self.commit_batch.clear()
         return res
+
+    def get_all_records(self, limit=1000):
+        df = None
+        try:
+            SQL_QUERY = f'select * FROM domains order by timestamp desc limit {limit}'
+            self.logger.info('running query: %s', SQL_QUERY)
+            df = pd.read_sql_query(SQL_QUERY, self.engine)
+        except Exception:
+            self.logger.exception('error on query')
+        return df
 
     def get_records(self, label=0, limit=1000, hosting=False, dash=True, columns=None):
         """[interface for the database]

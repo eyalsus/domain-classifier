@@ -1,6 +1,7 @@
 import networkx as nx
 from Model.Model import Model
 
+INITIAL_VALUE = 0.5
 
 class SnaModel(Model):
     def __init__(self, logger=None):
@@ -20,15 +21,20 @@ class SnaModel(Model):
         return X['domain'].apply(lambda x: H.nodes()[x]['current'])
 
     def _append_row_to_graph(self, row, G):
-        G.add_node(row['domain'], start=row['label'], current=row['label'])
-        G.add_node(row['domain_ip'], start=row['label'], current=row['label'])
-        G.add_node(row['as_subnet'], start=0.5, current=0.5)
-        G.add_node(row['as_number'], start=0.5, current=0.5)
-        G.add_node(row['as_name'], start=0.5, current=0.5)
-        G.add_node(row['ns_base_domain'], start=0.5, current=0.5)
-        G.add_node(row['ns_as_subnet'], start=0.5, current=0.5)
-        G.add_node(row['ns_as_number'], start=0.5, current=0.5)
-        G.add_node(row['ns_as_name'], start=0.5, current=0.5)
+        if 'label' in row:
+            G.add_node(row['domain'], start=row['label'], current=row['label'])
+            G.add_node(row['domain_ip'], start=row['label'], current=row['label'])
+        else:
+            G.add_node(row['domain'], start=INITIAL_VALUE, current=INITIAL_VALUE)
+            G.add_node(row['domain_ip'], start=INITIAL_VALUE, current=INITIAL_VALUE)
+        
+        G.add_node(row['as_subnet'], start=INITIAL_VALUE, current=INITIAL_VALUE)
+        G.add_node(row['as_number'], start=INITIAL_VALUE, current=INITIAL_VALUE)
+        G.add_node(row['as_name'], start=INITIAL_VALUE, current=INITIAL_VALUE)
+        G.add_node(row['ns_base_domain'], start=INITIAL_VALUE, current=INITIAL_VALUE)
+        G.add_node(row['ns_as_subnet'], start=INITIAL_VALUE, current=INITIAL_VALUE)
+        G.add_node(row['ns_as_number'], start=INITIAL_VALUE, current=INITIAL_VALUE)
+        G.add_node(row['ns_as_name'], start=INITIAL_VALUE, current=INITIAL_VALUE)
 
         G.add_edge(row['domain'], row['domain_ip'])
         G.add_edge(row['domain_ip'], row['as_subnet'])
@@ -59,7 +65,7 @@ class SnaModel(Model):
                     neighbors_current_score += graph.nodes[neighbor]['current']
                 neighbors_current_avg = neighbors_current_score / \
                     graph.degree(node)
-                graph.nodes[node]['current'] = 0.5 * \
-                    graph.nodes[node]['current'] + 0.5 * neighbors_current_avg
+                graph.nodes[node]['current'] = INITIAL_VALUE * \
+                    graph.nodes[node]['current'] + INITIAL_VALUE * neighbors_current_avg
         except Exception:
             self.logger.exception('update_node exception on node: %s', node)

@@ -85,9 +85,6 @@ def main(args):
     if args.output:
         with codecs.open(args.output, 'w', encoding="utf-8") as fs:
             fs.write(data_json)
-    else:
-        # defaults to console
-        print(data_json)
 
 
 def __parse_asname_line(line):
