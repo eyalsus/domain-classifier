@@ -16,9 +16,11 @@ class SnaModel(Model):
         H = self._G.copy()
         X.apply(self._append_row_to_graph, args=(H,), axis=1)
         self._stable_graph(H, iterations=5)
-
-        # return E.nodes()[X['domain']]['current']
         return X['domain'].apply(lambda x: H.nodes()[x]['current'])
+
+    def get_ego_graph(self, row, radius):
+        self._append_row_to_graph(row, self._G)
+        return nx.ego_graph(self._G, row['domain'], radius)
 
     def _append_row_to_graph(self, row, G):
         if 'label' in row:

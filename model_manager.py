@@ -48,6 +48,9 @@ def main():
         listen(db_conn, args.pkl_path, args.limit, args.retrain)
 
 def train(db_conn, pkl_path, limit=10000):
+    global logger
+    if logger is None:
+        logger = define_logger('model_manager')
     X_benign = db_conn.get_records(label=0, limit=limit, hosting=False, columns=None)
     X_malicious = db_conn.get_records(label=1, limit=limit, hosting=False, columns=None)
     X = pd.concat([X_malicious, X_benign])
