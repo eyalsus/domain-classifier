@@ -78,6 +78,21 @@ class DatabaseConnector(object):
             self.logger.exception('error on query')
         return df
 
+    def get_data_schema(self):
+        df = None
+        try:
+            SQL_QUERY = """
+            SELECT column_name, data_type
+            FROM information_schema.columns
+            WHERE table_schema = 'public' AND table_name = 'domains'
+            ORDER BY ordinal_position
+            """
+            self.logger.info('running query: %s', SQL_QUERY)
+            df = pd.read_sql_query(SQL_QUERY, self.engine)
+        except Exception:
+            self.logger.exception('error on query')
+        return df
+    
     def get_records(self, label=0, limit=1000, hosting=False, dash=True, columns=None):
         """[interface for the database]
 
