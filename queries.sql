@@ -8,7 +8,9 @@ group by label;
 select *
 from domains 
 where train_date is not null
-and markovmodel = 1;
+and markovmodel = 1
+order by timestamp DESC
+LIMIT 10;
 
 select *
 from domains
