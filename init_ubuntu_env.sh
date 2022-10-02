@@ -1,6 +1,6 @@
 #!/bin/bash
 sudo echo "Defining environment variables"
-export PHISHTANK_APIKEY="d297d14ebc2b90cfbca8e0b1d041c4dc692e0a4454818659e629a0352048a10e"
+export PHISHTANK_APIKEY=""
 export LOG_DIR_PATH="/home/eyalp/logs"
 export ASN_DB_PATH="/home/eyalp/domain-classifier/resources"
 sudo service redis-server restart
