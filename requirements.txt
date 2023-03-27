@@ -1,7 +1,7 @@
 pandas==0.25.2
 numpy==1.17.4
 netaddr==0.7.19
-redis==3.3.6
+redis==4.5.3
 tldextract==2.2.2
 requests==2.18.4
 networkx==2.4
